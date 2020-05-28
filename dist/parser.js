@@ -1,14 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Parser = void 0;
 const os_1 = require("os");
 const ts_morph_1 = require("ts-morph");
 const utils_1 = require("./utils");
 const ProgressBar = require("progress");
 const filesystem_1 = require("./filesystem");
+const fs = require("fs");
 const QUOTES = `(?:'|")`;
 const TEXT_INSIDE_QUOTES = `${QUOTES}([^'"]+)${QUOTES}`;
 const TEXT_INSIDE_QUOTES_RE = new RegExp(TEXT_INSIDE_QUOTES);
 const REQUIRE_RE = new RegExp(`require\\(${TEXT_INSIDE_QUOTES}\\)(?:\\.(\\w+))?`);
+const scriptTagRegexp = new RegExp("<script.*>([\\s\\S]*)<\\/script>");
 class Parser {
     constructor(config) {
         this.fs = new filesystem_1.FileSystem(config);
@@ -18,14 +21,14 @@ class Parser {
         const progress = new ProgressBar("Parsing :bar", {
             clear: true,
             total: this.fs.folderPaths.length + this.fs.filePaths.length,
-            width: process.stdout.columns
+            width: process.stdout.columns,
         });
         utils_1.info("Parsing", progress.total, "files");
-        this.fs.folderPaths.forEach(fullPath => {
+        this.fs.folderPaths.forEach((fullPath) => {
             files[fullPath] = { exports: [], imports: {} };
             progress.tick();
         });
-        this.fs.filePaths.forEach(fullPath => {
+        this.fs.filePaths.forEach((fullPath) => {
             try {
                 files[fullPath] = this.parseFile(fullPath);
             }
@@ -40,7 +43,17 @@ class Parser {
     }
     parseFile(fullPath) {
         utils_1.trace(`Parsing ${fullPath}`);
-        const sourceFile = this.fs.project.addSourceFileAtPath(fullPath);
+        let sourceFile;
+        if (fullPath.endsWith(".vue")) {
+            const fileStr = fs.readFileSync(fullPath, "utf8");
+            const script = scriptTagRegexp.exec(fileStr);
+            sourceFile = this.fs.project.createSourceFile(fullPath, (script && script[0]) || fileStr, {
+                overwrite: true,
+            });
+        }
+        else {
+            sourceFile = this.fs.project.addSourceFileAtPath(fullPath);
+        }
         const rootStatements = sourceFile.getStatements();
         const allStatements = utils_1.getAllStatements(rootStatements);
         utils_1.debug(fullPath, allStatements.length, "statements");
@@ -108,7 +121,7 @@ class Parser {
                         sourceFileImports.push(importStructure.defaultImport);
                     }
                     if (importStructure.namedImports instanceof Array) {
-                        sourceFileImports.push(...importStructure.namedImports.map(namedImport => typeof namedImport === "string" ? namedImport : namedImport.name));
+                        sourceFileImports.push(...importStructure.namedImports.map((namedImport) => typeof namedImport === "string" ? namedImport : namedImport.name));
                     }
                     if (!sourceFileImports.length && !importStructure.namedImports) {
                         utils_1.warn("IMPORT", sourceFile.getBaseName(), structure);
@@ -125,7 +138,7 @@ class Parser {
                 if (ts_morph_1.TypeGuards.isVariableStatement(statement)) {
                     try {
                         const structure = statement.getStructure();
-                        exports.push(...structure.declarations.map(declaration => declaration.name));
+                        exports.push(...structure.declarations.map((declaration) => declaration.name));
                     }
                     catch (e) {
                         utils_1.warn(e);

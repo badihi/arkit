@@ -1,28 +1,36 @@
 "use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllStatements = exports.convertToRelative = exports.getAbsolute = exports.getAllComponents = exports.request = exports.bold = exports.verifyComponentFilters = exports.array = exports.safeRequire = exports.find = exports.match = exports.getPaths = exports.getMemoryUsage = exports.getStats = void 0;
 const path = require("path");
 const fs = require("fs");
 const logger_1 = require("./logger");
 const nanomatch = require("nanomatch");
 const https = require("https");
 const ts_morph_1 = require("ts-morph");
-__export(require("./logger"));
+__exportStar(require("./logger"), exports);
 exports.getStats = (path) => {
     try {
         const stats = fs.statSync(path);
         return {
             isDirectory: stats.isDirectory(),
-            isFile: stats.isFile()
+            isFile: stats.isFile(),
         };
     }
     catch (e) {
         logger_1.warn(e);
         return {
             isDirectory: false,
-            isFile: false
+            isFile: false,
         };
     }
 };
@@ -71,7 +79,7 @@ exports.match = (filepath, patterns) => {
     return !patterns || !patterns.length || nanomatch.some(filepath, patterns);
 };
 exports.find = (filepath, patterns) => {
-    return patterns.find(pattern => nanomatch(filepath, pattern).length);
+    return patterns.find((pattern) => nanomatch(filepath, pattern).length);
 };
 exports.safeRequire = (path) => {
     try {
@@ -90,7 +98,7 @@ exports.verifyComponentFilters = (filters, component, mainDirectory) => {
     const matchesPatterns = !("filename" in component) ||
         exports.match(path.relative(mainDirectory, component.filename), filters.patterns);
     const matchesComponents = !filters.components ||
-        filters.components.some(type => type === component.type);
+        filters.components.some((type) => type === component.type);
     return matchesPatterns && matchesComponents;
 };
 exports.bold = (str) => {
@@ -106,16 +114,16 @@ exports.request = (path, payload) => {
             method: "post",
             headers: {
                 "Content-Type": "text/plain",
-                "Content-Length": payload.length
-            }
-        }, res => {
+                "Content-Length": payload.length,
+            },
+        }, (res) => {
             const data = [];
-            res.on("data", chunk => data.push(chunk));
+            res.on("data", (chunk) => data.push(chunk));
             res.on("end", () => {
                 resolve(Buffer.concat(data));
             });
         })
-            .on("error", err => {
+            .on("error", (err) => {
             reject(err);
         });
         req.write(payload);
@@ -123,7 +131,7 @@ exports.request = (path, payload) => {
     });
 };
 exports.getAllComponents = (layers, sortByName = false) => {
-    const components = [].concat(...[...layers.values()].map(components => [...components]));
+    const components = [].concat(...[...layers.values()].map((components) => [...components]));
     if (sortByName) {
         components.sort((a, b) => a.name.localeCompare(b.name));
     }
@@ -133,7 +141,7 @@ exports.getAbsolute = (filepath, root = process.cwd()) => {
     return !path.isAbsolute(filepath) ? path.resolve(root, filepath) : filepath;
 };
 exports.convertToRelative = (paths, root, excludes = []) => {
-    return paths.map(filepath => {
+    return paths.map((filepath) => {
         if (excludes.includes(filepath)) {
             return filepath;
         }

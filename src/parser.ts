@@ -4,7 +4,7 @@ import {
   ImportDeclarationStructure,
   SourceFile,
   Statement,
-  TypeGuards
+  TypeGuards,
 } from "ts-morph";
 import {
   find,
@@ -13,7 +13,7 @@ import {
   trace,
   warn,
   getAllStatements,
-  error
+  error,
 } from "./utils";
 import { ConfigBase, Exports, File, Files, Imports } from "./types";
 import * as ProgressBar from "progress";
@@ -40,17 +40,17 @@ export class Parser {
     const progress = new ProgressBar("Parsing :bar", {
       clear: true,
       total: this.fs.folderPaths.length + this.fs.filePaths.length,
-      width: process.stdout.columns
+      width: process.stdout.columns,
     });
 
     info("Parsing", progress.total, "files");
 
-    this.fs.folderPaths.forEach(fullPath => {
+    this.fs.folderPaths.forEach((fullPath) => {
       files[fullPath] = { exports: [], imports: {} };
       progress.tick();
     });
 
-    this.fs.filePaths.forEach(fullPath => {
+    this.fs.filePaths.forEach((fullPath) => {
       try {
         files[fullPath] = this.parseFile(fullPath);
       } catch (e) {
@@ -77,7 +77,7 @@ export class Parser {
         fullPath,
         (script && script[0]) || fileStr,
         {
-          overwrite: true
+          overwrite: true,
         }
       );
     } else {
@@ -193,7 +193,7 @@ export class Parser {
 
           if (importStructure.namedImports instanceof Array) {
             sourceFileImports.push(
-              ...importStructure.namedImports.map(namedImport =>
+              ...importStructure.namedImports.map((namedImport) =>
                 typeof namedImport === "string" ? namedImport : namedImport.name
               )
             );
@@ -220,7 +220,7 @@ export class Parser {
             const structure = statement.getStructure();
 
             exports.push(
-              ...structure.declarations.map(declaration => declaration.name)
+              ...structure.declarations.map((declaration) => declaration.name)
             );
           } catch (e) {
             warn(e);

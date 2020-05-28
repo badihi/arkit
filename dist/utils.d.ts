@@ -12,11 +12,11 @@ export declare const match: (filepath: string, patterns?: string[] | undefined) 
 export declare const find: (filepath: string, patterns: string[]) => string | undefined;
 export declare const safeRequire: <T>(path: string) => T | undefined;
 export declare const array: <T>(input?: T | T[] | undefined) => T[] | undefined;
-export declare const verifyComponentFilters: (filters: ComponentFilters, component: ComponentSchema | Component, mainDirectory: string) => boolean;
+export declare const verifyComponentFilters: (filters: ComponentFilters, component: Component | ComponentSchema, mainDirectory: string) => boolean;
 export declare const bold: (str: string) => string;
 export declare const request: (path: any, payload: any) => Promise<Buffer>;
 export declare const getAllComponents: (layers: Layers, sortByName?: boolean) => Component[];
 export declare const getAbsolute: (filepath: string, root?: string) => string;
 export declare const convertToRelative: (paths: string[], root: string, excludes?: string[]) => string[];
-export declare const getAllStatements: (nodes: Node<import("typescript").Node>[], statements?: Statement<import("typescript").Statement>[]) => Statement<import("typescript").Statement>[];
+export declare const getAllStatements: (nodes: Node[], statements?: Statement[]) => Statement[];
 //# sourceMappingURL=utils.d.ts.map
