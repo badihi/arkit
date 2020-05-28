@@ -18,6 +18,7 @@ import {
 import { ConfigBase, Exports, File, Files, Imports } from "./types";
 import * as ProgressBar from "progress";
 import { FileSystem } from "./filesystem";
+import * as fs from "fs";
 
 const QUOTES = `(?:'|")`;
 const TEXT_INSIDE_QUOTES = `${QUOTES}([^'"]+)${QUOTES}`;
@@ -25,6 +26,7 @@ const TEXT_INSIDE_QUOTES_RE = new RegExp(TEXT_INSIDE_QUOTES);
 const REQUIRE_RE = new RegExp(
   `require\\(${TEXT_INSIDE_QUOTES}\\)(?:\\.(\\w+))?`
 );
+const scriptTagRegexp = new RegExp("<script.*>([\\s\\S]*)<\\/script>");
 
 export class Parser {
   private readonly fs: FileSystem;
@@ -67,7 +69,20 @@ export class Parser {
   private parseFile(fullPath: string): File {
     trace(`Parsing ${fullPath}`);
 
-    const sourceFile = this.fs.project.addSourceFileAtPath(fullPath);
+    let sourceFile: SourceFile;
+    if (fullPath.endsWith(".vue")) {
+      const fileStr = fs.readFileSync(fullPath, "utf8");
+      const script = scriptTagRegexp.exec(fileStr);
+      sourceFile = this.fs.project.createSourceFile(
+        fullPath,
+        (script && script[0]) || fileStr,
+        {
+          overwrite: true
+        }
+      );
+    } else {
+      sourceFile = this.fs.project.addSourceFileAtPath(fullPath);
+    }
     const rootStatements = sourceFile.getStatements();
     const allStatements = getAllStatements(rootStatements);
 
